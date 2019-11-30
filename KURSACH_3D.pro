@@ -28,8 +28,10 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     myfigura.cpp \
+    my3dthinth.cpp
 
 HEADERS += \
         mainwindow.h \
     myfigura.h \
+    my3dthinth.h
 

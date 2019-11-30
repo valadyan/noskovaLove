@@ -2,16 +2,16 @@
 #include<QDebug>
 
 myfigura::myfigura(myfigura&& mf){
-    points1=std::move(mf.points1);
-    rebra1=std::move(mf.rebra1);
-    grani1=std::move(mf.grani1);
-    points2=std::move(mf.points2);
-    rebra2=std::move(mf.rebra2);
-    grani2=std::move(mf.grani2);
     R1=mf.R1;
     R2=mf.R2;
-    n=mf.n;
+    aproksimation=mf.aproksimation;
     h=mf.h;
+    pointList=std::move(mf.pointList);
+    lineList=std::move(mf.lineList);
+    planeList=std::move(mf.planeList);
+    mf.pointList.clear();
+    mf.lineList.clear();
+    mf.planeList.clear();
 }
 
 //myfigura::myfigura(const myfigura& mf){
@@ -33,72 +33,82 @@ void myfigura::aprok_change_slot(int a){
     mutex.unlock();
 }
 
-void myfigura::doPointEdit(QList<QSharedPointer<QVector3D>>& points, QList<QSharedPointer<QLine>>& rebra, QList<QSharedPointer<gran>>& grani)
+void myfigura::doPointEdit()
 {
-    int aproksimation=points.size();
-    rebra.clear();
-    auto point_iterator1=points.cbegin();//vershina
-    auto point_iterator2=point_iterator1;
-    for(auto i=0; i<aproksimation; i++){
-        rebra.push_back(QSharedPointer<QLine>(new QLine((*points.cbegin())->toPoint(), (*point_iterator1++)->toPoint())));
-        if(point_iterator1==points.cend()){
-            rebra.push_back(QSharedPointer<QLine>(new QLine((*--point_iterator1)->toPoint(), (*points.cbegin())->toPoint())));
-            rebra.push_back(QSharedPointer<QLine>(new QLine((*point_iterator1)->toPoint(), (*++points.cbegin())->toPoint())));
-            break;
-        }
-        rebra.push_back(QSharedPointer<QLine>(new QLine((*point_iterator1)->toPoint(), (*point_iterator2++)->toPoint())));
-    }
-    grani.clear();
-    qDebug()<<"mhv";
-    auto rebraIter=rebra.cbegin();
-    for(int i=0; i<aproksimation; i++){
-        QLine* linemas=new QLine[3];
-        linemas[0]=*(*rebraIter++);
-        linemas[1]=*(*rebraIter++);
-        linemas[2]=*(*rebraIter);
-        grani.push_back(QSharedPointer<gran>(new gran(linemas, 3)));
-    }
-
-    point_iterator1=points.cbegin();//vershina
+    lineList.clear();
+    planeList.clear();
+    auto point_iterator1=pointList.cbegin();//vershina
     point_iterator1++;
-    point_iterator2=++point_iterator1;
-    QLine* osnovanie=new QLine[aproksimation];
-    for(int i=0; i<aproksimation ; i++){
-        osnovanie[i]=QLine((*point_iterator1++)->toPoint(), (*point_iterator2++)->toPoint());
-        if(point_iterator2==points.cend()){
-            osnovanie[i+1]=QLine((*++points.cbegin())->toPoint(), (*--point_iterator2)->toPoint());
-            break;
-        }
+    auto point_iterator2=point_iterator1;
+    for(auto i=0; i<aproksimation-1; i++){
+        lineList.push_back(MyLine3D(*pointList.cbegin(), (*point_iterator1++)));
+        lineList.push_back(MyLine3D(*point_iterator1, *point_iterator2++));
     }
-    grani.push_back(QSharedPointer<gran>(new gran(osnovanie, n)));
+    lineList.push_back(MyLine3D(*point_iterator1, *pointList.cbegin()));
+    lineList.push_back(MyLine3D(*point_iterator1, *++pointList.cbegin()));
+     auto insideBegin=++point_iterator1;//begin of inside triengle
+     point_iterator2=point_iterator1;
+            for(auto i=0; i<aproksimation-1; i++){
+                lineList.push_back(MyLine3D(*pointList.cbegin(), (*point_iterator1++)));
+                lineList.push_back(MyLine3D(*point_iterator1, *point_iterator2++));
+            }
+            lineList.push_back(MyLine3D(*point_iterator1, *pointList.cbegin()));
+            lineList.push_back(MyLine3D(*point_iterator1, *insideBegin));
+
+    auto rebraIter=lineList.cbegin();
+            MyLine3D* linemas= new MyLine3D[3];
+            MyLine3D* osnovanie= new MyLine3D[aproksimation];
+    for(int i=0; i<aproksimation-1; i++){
+        linemas[0]=(*rebraIter++);
+        *(osnovanie+i)=(*rebraIter);
+        linemas[1]=(*rebraIter++);
+        linemas[2]=(*rebraIter);
+        planeList.push_back(MyPlane(3, linemas));
+    }
+    linemas[0]=(*rebraIter++);
+    *(osnovanie+aproksimation-1)=(*rebraIter);
+    linemas[1]=(*rebraIter);
+    linemas[2]=*lineList.cbegin();
+    planeList.push_back(MyPlane(3, linemas));
+    planeList.push_back(MyPlane(aproksimation, osnovanie));
+    auto insideBeg=++rebraIter;
+    for(int i=0; i<aproksimation-1; i++){//inside planes
+        linemas[2]=(*rebraIter++);
+        *(osnovanie+aproksimation-1-i)=(*rebraIter);
+        linemas[1]=(*rebraIter++);
+        linemas[0]=(*rebraIter);
+        planeList.push_back(MyPlane(3, linemas));
+    }
+    linemas[2]=(*rebraIter++);
+    *(osnovanie)=(*rebraIter);
+    linemas[1]=(*rebraIter);
+    linemas[0]=*insideBeg;
+    planeList.push_back(MyPlane(3, linemas));
+    planeList.push_back(MyPlane(aproksimation, osnovanie));
 }
 
 void myfigura::remake_this_shit(myfigura* mfp, int R1, int R2, int a, int h){
-    *mfp=myfigura(R1, R2, a, h);
+    *mfp=std::move(myfigura(R1, R2, a, h));
 }
 
 void myfigura::operator *=(const QMatrix4x4& matr){
-    for(auto& vec: points1){
-        *vec=matr*(*vec);
+    for(auto& vec: pointList){
+        vec=matr*vec;
     }
-    for(auto& vec: points2){
-        *vec=matr*(*vec);
-    }
-    doPointEdit(points1, rebra1, grani1);
-    doPointEdit(points2, rebra2, grani2);
+    doPointEdit();
 }
 
 myfigura& myfigura::operator =(myfigura&& mf){
-    points1=std::move(mf.points1);
-    rebra1=std::move(mf.rebra1);
-    grani1=std::move(mf.grani1);
-    points2=std::move(mf.points2);
-    rebra2=std::move(mf.rebra2);
-    grani2=std::move(mf.grani2);
     R1=mf.R1;
     R2=mf.R2;
-    n=mf.n;
+    aproksimation=mf.aproksimation;
     h=mf.h;
+    pointList=std::move(mf.pointList);
+    lineList=std::move(mf.lineList);
+    planeList=std::move(mf.planeList);
+    mf.pointList.clear();
+    mf.lineList.clear();
+    mf.planeList.clear();
 }
 
 
@@ -109,37 +119,22 @@ myfigura& myfigura::operator =(myfigura&& mf){
 //    doPointEdit(points1, rebra1, grani1);
 //}
 
-myfigura::myfigura(int _R1, int _R2, int _n, int _h): R1(_R1), R2(_R2), n(_n), h(_h)
+myfigura::myfigura(int _R1, int _R2, int _n, int _h): R1(_R1), R2(_R2), aproksimation(_n), h(_h)
 {
 
-    points1.push_back(QSharedPointer<QVector3D>(new QVector3D(0,0,0)));//вершина конуса
-    points2.push_back(QSharedPointer<QVector3D>(new QVector3D(0,0,0)));//вершина конуса
+    pointList.push_back(QVector3D(0,0,0));//вершина конуса
 
-    float alf=2*3.14/n;
+    float alf=2*3.14/aproksimation;
 
-    for(int i=0; i<n; i++){//сюда тасуешь свои точки
-        points1.push_back(QSharedPointer<QVector3D>(new QVector3D(h,R1*sin(alf*i),R1*cos(alf*i))));
+    for(int i=0; i<aproksimation; i++){//сюда тасуешь свои точки
+        pointList.push_back(QVector3D(h,R1*sin(alf*i),R1*cos(alf*i)));
     }
-    for(int i=0; i<n; i++){//сюда тасуешь свои точки
-        points2.push_back(QSharedPointer<QVector3D>(new QVector3D(h,R2*sin(alf*i),R2*cos(alf*i))));
+    for(int i=0; i<aproksimation; i++){//сюда тасуешь свои точки
+        pointList.push_back(QVector3D(h,R2*sin(alf*i),R2*cos(alf*i)));
     }
+    doPointEdit();
+}
 
-    doPointEdit(points1, rebra1, grani1);//тута они соединяются
-    doPointEdit(points2, rebra2, grani2);
-}
-class gran;
-const QList<QSharedPointer<QVector3D>>& myfigura::get_points1(){
-    return points1;
-}
-const QList<QSharedPointer<QVector3D>>& myfigura::get_points2(){
-    return points2;
-}
-const QList<QSharedPointer<QLine>>& myfigura::get_rebra1(){
-    return rebra1;
-}
-const QList<QSharedPointer<QLine>>& myfigura::get_rebra2(){
-    return rebra2;
-}
 myfigura::~myfigura(){
 //    for(auto &d: points1){
 //        delete d;
