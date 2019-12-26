@@ -77,14 +77,24 @@
      </layout>
     </item>
     <item>
-     <widget class="QDoubleSpinBox" name="doubleSpinBoxD">
+     <widget class="QSpinBox" name="spinPPCount">
       <property name="minimum">
-       <double>-100.000000000000000</double>
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>3</number>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="spinPPCount"/>
+     <widget class="QSpinBox" name="spinPZL">
+      <property name="minimum">
+       <number>-10002</number>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -94,7 +104,7 @@
      <x>20</x>
      <y>340</y>
      <width>220</width>
-     <height>93</height>
+     <height>125</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -117,14 +127,25 @@
      </layout>
     </item>
     <item>
-     <widget class="QSpinBox" name="spinKL"/>
+     <widget class="QDoubleSpinBox" name="spinKL">
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+     </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="spinKA"/>
+     <widget class="QSpinBox" name="spinKA">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>90</number>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>320</x>
@@ -191,7 +212,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -261,30 +282,30 @@
           <item>
            <widget class="QSpinBox" name="spinMoveX">
             <property name="minimum">
-             <number>-300</number>
+             <number>-3000</number>
             </property>
             <property name="maximum">
-             <number>300</number>
+             <number>3000</number>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QSpinBox" name="spinMoveY">
             <property name="minimum">
-             <number>-300</number>
+             <number>-3002</number>
             </property>
             <property name="maximum">
-             <number>300</number>
+             <number>3000</number>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QSpinBox" name="spinMoveZ">
             <property name="minimum">
-             <number>-300</number>
+             <number>-10000</number>
             </property>
             <property name="maximum">
-             <number>300</number>
+             <number>10000</number>
             </property>
            </widget>
           </item>
@@ -353,7 +374,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>300</x>

@@ -1,8 +1,13 @@
 #include "mainwindow.h"
+
 #include <QDebug>
 MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent)
 {
+    utils= new Utils();
+    utils->show();
+    connect(utils, &Utils::sendMatrix, this, &MainWindow::useMatrix);
+    connect(this, &MainWindow::destroyed, utils, &Utils::close);
 
     slider=new QSlider(this);
     slider->setFixedSize(30,100);
@@ -24,10 +29,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(bFront, &QPushButton::clicked, this, &MainWindow::showFront);
     connect(chBox, &QCheckBox::clicked, this, &MainWindow::update_slot);
 
-    setGeometry(100,100,600,600);
-    my_fig=new myfigura(50,150,7,120);
-    connect(slider, &QSlider::sliderMoved, my_fig, &myfigura::aprok_change_slot);
-    connect(my_fig, &myfigura::figChanged, this, &MainWindow::update_slot);
+    setGeometry(600,100,600,600);
+    R1=50; R2=150; aprox=7; h=120;
+    my_fig=new myfigura(R1, R2, aprox, h);
+//    (*my_fig)*=eyeMatrix;
+
+    connect(slider, &QSlider::sliderMoved, this, &MainWindow::aprok_change_slot);
 }
 
 void MainWindow::mousePressEvent(QMouseEvent* mouseEvent){
@@ -54,70 +61,80 @@ void MainWindow::mouseReleaseEvent(QMouseEvent* mouseEvent){
 //        update();
 //        return;
 //    }
-    auto dx=2*3.14*(start_x_position-mouseEvent->x());//в радианах
-    auto dy=2*3.14*(start_y_position-mouseEvent->y());
-//    QMatrix4x4 matrixX;
-//    QMatrix4x4 matrixY;
+    int dx_, dy_;
+    if(abs(start_x_position-mouseEvent->x())>100)dx_=100; else dx_=0;
+            if(abs(start_y_position-mouseEvent->y())>100)dy_=100;else dy_=0;
+    auto dx=2*3.14*(dx_);//в радианах
+    auto dy=2*3.14*(dy_);
+
     if(mouseEvent->button() == Qt::LeftButton){//поворо по x y
-//          matrixX=QMatrix4x4(1,0,0,0,
-//                             0,cos(dx),sin(dx),0,
-//                             0,-sin(dx),cos(dx),0,
-//                             0,0,0,1);
-//          matrixY=QMatrix4x4(cos(dy),0,-sin(dy),0,
-//                             0,1,0,0,
-//                             sin(dy),0,cos(dy),0,
-//                             0,0,0,1);
-          (*my_fig)*=QMatrix4x4(1,0,0,0,
-                                0,cos(dx),sin(dx),0,
-                                0,-sin(dx),cos(dx),0,
-                                0,0,0,1)*QMatrix4x4(cos(dy),0,-sin(dy),0,
-                                                    0,1,0,0,
-                                                    sin(dy),0,cos(dy),0,
-                                                    0,0,0,1);
+          my_fig->operator *=(MatrixManager::getRotateMatrix(dx,dy,0));
           update();
     }
-    QMatrix4x4 matrixZ;
     if(mouseEvent->button() == Qt::RightButton){//po z
-        matrixZ=QMatrix4x4(cos(dx),sin(dx),0,0,
-                           -sin(dx),cos(dx),0,0,
-                           0,0,1,0,
-                           0,0,0,1);
-        (*my_fig)*=matrixZ;
+        my_fig->operator *=(MatrixManager::getRotateMatrix(0,0,dx));
         update();
     }
 }
 
 void MainWindow::showTop(){
-    (*my_fig)*=QMatrix4x4(1,0,0,0,
+    (*my_fig)*= new QMatrix4x4(1,0,0,0,
                           0,1,0,0,
                           0,0,0,0,
                           0,0,0,1);
     update();
 }
 void MainWindow::showLeft(){
-    (*my_fig)*=QMatrix4x4(0,0,0,0,
+    (*my_fig)*=new QMatrix4x4(0,0,0,0,
                           0,1,0,0,
                           0,0,1,0,
                           0,0,0,1);
     update();
 }
 void MainWindow::showFront(){
-    (*my_fig)*=QMatrix4x4(1,0,0,0,
+    (*my_fig)*=new QMatrix4x4(1,0,0,0,
                           0,0,0,0,
                           0,0,1,0,
                           0,0,0,1);
     update();
 }
 
+void MainWindow::aprok_change_slot(int a){
+    qDebug()<<a;
+    my_fig=new myfigura(R1, R2, a, h);
+    update_slot();
+}
+//auto CalculateAngle=[](const QVector3D& vectorParams, const QVector3D& sideParams)
+//{
+//    double chisl = vectorParams.x() * sideParams.x() + vectorParams.y() * sideParams.y() + vectorParams.z() * sideParams.z();
+//    double znam1 = sqrt(pow(vectorParams.x(), 2) + pow(vectorParams.y(), 2) + pow(vectorParams.z(), 2));
+//    double znam2 = sqrt(pow(sideParams.x(), 2) + pow(sideParams.y(), 2) + pow(sideParams.z(), 2));
 
+//    double otv = chisl / (znam1 * znam2);
+//    return otv;
+
+//};
+
+
+void MainWindow::useMatrix(QMatrix4x4 m){
+    qDebug()<<"was recived"<<m;
+    my_fig->operator *=(new QMatrix4x4(m));
+    update();
+}
 
 void MainWindow::showSeenLines(QPainter* painter){
-
+    QPoint centerPoint(geometry().size().width()/2,geometry().size().height()/2);
+    for(auto pl: my_fig->getPlanes()){
+        if(pl->isSeen()){
+            for(auto line: pl->getLines())
+                painter->drawLine(line.translated(centerPoint));
+        }
+    }
 }
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
-    qDebug("событие  отрисовки дошло");
+    qDebug("событие отрисовки дошло");
 
     if(!my_fig) return;
 
@@ -125,19 +142,19 @@ void MainWindow::paintEvent(QPaintEvent *)
 
     QPoint centerPoint(geometry().size().width()/2,geometry().size().height()/2);
 
-    painter.fillRect(0,0, geometry().width(), geometry().height(), QBrush(QColor(0,110,200)));
+    painter.fillRect(0,0, geometry().width(), geometry().height(), QBrush(QColor(255,255,255)));
 
-    if(chBox->isDown()){
+    if(chBox->isChecked()){
         showSeenLines(&painter);
         return;
     }
 
-    for(auto& pvec: my_fig->getPoints()){
-        painter.drawEllipse(pvec.toPoint()+centerPoint, 5,5);
+    for(auto& pNode: my_fig->getNodes()){
+        painter.drawEllipse(pNode->getPoint()->getVec().toPoint()+centerPoint, 5,5);
+        for(auto& line: pNode->getLines())
+            painter.drawLine(line.translated(centerPoint));
     }
-    for(auto& pline: my_fig->getLines()){
-        painter.drawLine(pline.getLine().translated(centerPoint));
-    }
+    qDebug()<<my_fig->getPoints()[0]->getVec();
 }
 
 MainWindow::~MainWindow()

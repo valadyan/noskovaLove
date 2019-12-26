@@ -52,7 +52,7 @@ void Utils::checkKosa(){
 }
 void Utils::checkPerspeck(){
             matr=MatrixManager::getPerspectiveMatrix(
-                        ui->doubleSpinBoxD->value(),
+                        ui->spinPZL->value(),
                         ui->spinPPCount->value());
             qDebug()<<"to send"<<(*matr);
             emit sendMatrix(*matr);

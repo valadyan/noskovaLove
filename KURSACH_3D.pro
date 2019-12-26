@@ -28,10 +28,16 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     myfigura.cpp \
-    my3dthinth.cpp
+    my3dthinth.cpp \
+    utils.cpp
 
 HEADERS += \
         mainwindow.h \
     myfigura.h \
-    my3dthinth.h
+    my3dthinth.h \
+    matrixmanager.h \
+    utils.h
+
+FORMS += \
+    utils.ui
 
