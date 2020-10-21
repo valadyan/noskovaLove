@@ -34,6 +34,7 @@ public slots:
     void showLeft();
     void showTop();
     void useMatrix(QMatrix4x4 m);
+    void animate();
 
 private:
     int start_x_position;//for mouse
@@ -48,6 +49,9 @@ private:
     QPushButton* bTop;
     QPushButton* bLeft;
     QCheckBox* chBox;
+    QCheckBox* animationChBox;
+
+    QTimer *animationTimer;
 
     Utils* utils;
 
