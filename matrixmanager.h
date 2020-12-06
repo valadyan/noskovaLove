@@ -10,7 +10,7 @@ class MatrixManager
 {
 public:
     MatrixManager();
-    static QMatrix4x4* getRotateMatrix(int dx, int dy, int dz){
+    static QMatrix4x4* getRotateMatrix(double dx, double dy, double dz){
         return new QMatrix4x4(QMatrix4x4(1,0,0,0,
                           0,cos(dx),sin(dx),0,
                           0,-sin(dx),cos(dx),0,

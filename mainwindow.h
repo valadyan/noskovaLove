@@ -29,6 +29,7 @@ public slots:
     void aprok_change_slot(int a);
     void update_slot(){update();}
     void useMatrix(QMatrix4x4 m);
+    void animate();
 
 private:
     int start_x_position;//for mouse
@@ -40,6 +41,9 @@ private:
 
     QSlider* slider;
     QCheckBox* chBox;
+    QCheckBox* animationChBox;
+
+    QTimer *animationTimer;
 
     Utils* utils;
 

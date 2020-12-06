@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QTimer>
 
 #include <QDebug>
 MainWindow::MainWindow(QWidget *parent) :
@@ -15,10 +16,24 @@ MainWindow::MainWindow(QWidget *parent) :
     slider->setTickInterval(1);
 
     chBox= new QCheckBox(this);
+    animationChBox= new QCheckBox(this);
+    QTimer *animationTimer = new QTimer(this);
+
 
     chBox->setGeometry(550,0,30,30);
+    animationChBox->setGeometry(550,20,30,30);
+
+    animationTimer->setInterval(200);
 
     connect(chBox, &QCheckBox::clicked, this, &MainWindow::update_slot);
+    connect(animationTimer, &QTimer::timeout, this, &MainWindow::animate);
+    connect(animationChBox, &QCheckBox::clicked, [animationTimer](bool isCheck){
+        if(isCheck){
+            animationTimer->start();
+          }else{
+            animationTimer->stop();
+          }
+      });
 
     setGeometry(600,100,600,600);
     R1=50; R2=150; aprox=7; h=120;
@@ -89,6 +104,12 @@ void MainWindow::useMatrix(QMatrix4x4 m){
     qDebug()<<"was recived"<<m;
     my_fig->operator *=(new QMatrix4x4(m));
     update();
+}
+
+void MainWindow::animate(){
+  float angle=3.14/16;
+  my_fig->operator *=(MatrixManager::getRotateMatrix(angle,angle,angle));
+  update();
 }
 
 void MainWindow::showSeenLines(QPainter* painter){
