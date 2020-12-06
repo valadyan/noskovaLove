@@ -75,6 +75,9 @@ public:
             nodes=p.nodes;
             return *this;
         }
+        QList<Node*> getNodes(){
+          return nodes;
+        }
         QList<QLine> getLines(){
             QList<QLine> lines;
             auto iterN=nodes.begin();

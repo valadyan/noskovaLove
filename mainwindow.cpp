@@ -14,19 +14,10 @@ MainWindow::MainWindow(QWidget *parent) :
     slider->setRange(3,15);
     slider->setTickInterval(1);
 
-    bLeft=new QPushButton("leftView",this);
-    bTop=new QPushButton("topView",this);
-    bFront=new QPushButton("frontView",this);
     chBox= new QCheckBox(this);
 
-    bLeft->setGeometry(20,0,100,30);
-    bTop->setGeometry(200,0,100,30);
-    bFront->setGeometry(400,0,100,30);
     chBox->setGeometry(550,0,30,30);
 
-    connect(bLeft, &QPushButton::clicked, this, &MainWindow::showLeft);
-    connect(bTop, &QPushButton::clicked, this, &MainWindow::showTop);
-    connect(bFront, &QPushButton::clicked, this, &MainWindow::showFront);
     connect(chBox, &QCheckBox::clicked, this, &MainWindow::update_slot);
 
     setGeometry(600,100,600,600);
@@ -77,28 +68,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent* mouseEvent){
     }
 }
 
-void MainWindow::showTop(){
-    (*my_fig)*= new QMatrix4x4(1,0,0,0,
-                          0,1,0,0,
-                          0,0,0,0,
-                          0,0,0,1);
-    update();
-}
-void MainWindow::showLeft(){
-    (*my_fig)*=new QMatrix4x4(0,0,0,0,
-                          0,1,0,0,
-                          0,0,1,0,
-                          0,0,0,1);
-    update();
-}
-void MainWindow::showFront(){
-    (*my_fig)*=new QMatrix4x4(1,0,0,0,
-                          0,0,0,0,
-                          0,0,1,0,
-                          0,0,0,1);
-    update();
-}
-
 void MainWindow::aprok_change_slot(int a){
     qDebug()<<a;
     my_fig=new myfigura(R1, R2, a, h);
@@ -134,8 +103,6 @@ void MainWindow::showSeenLines(QPainter* painter){
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
-    qDebug("событие отрисовки дошло");
-
     if(!my_fig) return;
 
     QPainter painter(this);
@@ -149,12 +116,10 @@ void MainWindow::paintEvent(QPaintEvent *)
         return;
     }
 
-    for(auto& pNode: my_fig->getNodes()){
-        painter.drawEllipse(pNode->getPoint()->getVec().toPoint()+centerPoint, 5,5);
-        for(auto& line: pNode->getLines())
-            painter.drawLine(line.translated(centerPoint));
+    for(auto pl: my_fig->getPlanes()){
+      for(auto line: pl->getLines())
+          painter.drawLine(line.translated(centerPoint));
     }
-    qDebug()<<my_fig->getPoints()[0]->getVec();
 }
 
 MainWindow::~MainWindow()

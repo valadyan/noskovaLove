@@ -16,7 +16,6 @@ public:
     void operator *=(const QMatrix4x4*);
     myfigura& operator =(myfigura&&);
     myfigura& operator =(myfigura& mf);
-    void makePlane(Node* p1, Node* p2);
 
 private:
     void doPointEdit();

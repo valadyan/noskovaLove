@@ -15,7 +15,6 @@
 class MainWindow : public QWidget
 {
     Q_OBJECT
-//blya daje ob`jasnyat ne budu
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -24,15 +23,11 @@ public:
     void mouseReleaseEvent(QMouseEvent* );
 //    void mouseMoveEvent(QMouseEvent* );
 //    void mouseDoubleClickEvent(QMouseEvent* );
-//    void setMatrix(const QMatrix4x4&);
 signals:
     void update_signal();
 public slots:
     void aprok_change_slot(int a);
     void update_slot(){update();}
-    void showFront();
-    void showLeft();
-    void showTop();
     void useMatrix(QMatrix4x4 m);
 
 private:
@@ -44,9 +39,6 @@ private:
     void showSeenLines(QPainter* painter);
 
     QSlider* slider;
-    QPushButton* bFront;
-    QPushButton* bTop;
-    QPushButton* bLeft;
     QCheckBox* chBox;
 
     Utils* utils;
