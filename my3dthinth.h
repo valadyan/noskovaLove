@@ -81,7 +81,7 @@ public:
         QList<QLine> getLines(){
             QList<QLine> lines;
             auto iterN=nodes.begin();
-            auto iter2=nodes.begin()++;
+            auto iter2=iterN+1;
             auto preEnd=--nodes.end();
             while(iter2!=preEnd){
                 lines.push_back(QLine((*iterN++)->getPoint()->getVec().toPoint(), (*iter2++)->getPoint()->getVec().toPoint()));
