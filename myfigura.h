@@ -5,7 +5,7 @@
 
 #include<my3dthinth.h>
 
-class myfigura: public My3DThinth
+class myfigura: public Geometry::My3DThinth
 {
 public:
     myfigura(int _R1, int _R2, int _n, int _h);

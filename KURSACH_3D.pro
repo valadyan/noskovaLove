@@ -25,6 +25,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    Node.cpp \
+    Plane.cpp \
+    Point.cpp \
         main.cpp \
         mainwindow.cpp \
     myfigura.cpp \
@@ -32,6 +35,9 @@ SOURCES += \
     utils.cpp
 
 HEADERS += \
+    Node.h \
+    Plane.h \
+    Point.h \
         mainwindow.h \
     myfigura.h \
     my3dthinth.h \

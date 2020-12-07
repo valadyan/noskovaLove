@@ -1,6 +1,8 @@
 #include "myfigura.h"
 #include<QDebug>
 
+using namespace Geometry;
+
 myfigura::myfigura(myfigura&& mf){
     R1=mf.R1;
     R2=mf.R2;
@@ -93,43 +95,44 @@ myfigura& myfigura::operator =(myfigura& mf){
     return *this;
 }
 
-auto makePlane = [] (Node* p1, Node* p2, Node* p3) ->My3DThinth::Plane*{
+auto makePlane = [] (Node* p1, Node* p2, Node* p3) ->Plane*{
     QList<Node*> nodes;
     nodes.push_back(p1);
     nodes.push_back(p2);
     nodes.push_back(p3);
-    My3DThinth::Plane* plane = new My3DThinth::Plane(nodes);
+    Plane* plane = new Plane(nodes);
     return plane;
 };
 
 myfigura::myfigura(int _R1, int _R2, int _n, int _h): R1(_R1), R2(_R2), aproksimation(_n), h(_h)
 {
-    MyPoint* p=new MyPoint(QVector3D(0,0,0));
-    points.push_back(std::shared_ptr<MyPoint>(p));//вершина конуса
-    nodes.push_back(std::shared_ptr<Node>(new Node(p)));
-
+    Point* p=new Point(QVector3D(0,0,0));
     Node* topNode =new Node(p);
+    points.push_back(std::shared_ptr<Point>(p));//вершина конуса
+    nodes.push_back(std::shared_ptr<Node>(new Node(p)));
 
     float alf=2*3.14/aproksimation;
 
-    MyPoint* baseP = new MyPoint(QVector3D(h,R2*sin(alf*0),R2*cos(alf*0)));//cone base node
+    QList<Node*> coneBaseList;
+
+    Point* baseP = new Point(QVector3D(h,R2*sin(alf*0),R2*cos(alf*0)));//cone base node
     Node* baseNode = new Node(p);
-    points.push_back(std::shared_ptr<MyPoint>(baseP));
+    points.push_back(std::shared_ptr<Point>(baseP));
     nodes.push_back(std::shared_ptr<Node>(baseNode));
+    coneBaseList.append(baseNode);
 
     for(int i=1; i<aproksimation; i++){
-        MyPoint* p = new MyPoint(QVector3D(h,R2*sin(alf*i),R2*cos(alf*i)));
+        Point* p = new Point(QVector3D(h,R2*sin(alf*i),R2*cos(alf*i)));
         Node* nextBaseNode = new Node(p);
-        points.push_back(std::shared_ptr<MyPoint>(p));
+        points.push_back(std::shared_ptr<Point>(p));
         nodes.push_back(std::shared_ptr<Node>(new Node(p)));
-        planes.push_back(std::shared_ptr<Plane>(makePlane(baseNode, nextBaseNode, topNode)));
+        planes.push_back(std::shared_ptr<Plane>(makePlane(topNode, baseNode, nextBaseNode)));
+        coneBaseList.append(nextBaseNode);
         baseNode = nextBaseNode;
     }
-//    for(int i=0; i<aproksimation; i++){//сюда тасуешь свои точки
-//        MyPoint* p=new MyPoint(QVector3D(h,R2*sin(alf*i),R2*cos(alf*i)));
-//        points.push_back(std::shared_ptr<MyPoint>(p));
-//        nodes.push_back(std::shared_ptr<Node>(new Node(p)));
-//    }
+
+    planes.push_back(std::shared_ptr<Plane>(new Plane(coneBaseList)));
+
 //    doPointEdit();
 }
 
