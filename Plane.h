@@ -9,13 +9,14 @@ namespace Geometry {
 
   class Plane
   {
+    QList<std::shared_ptr<Node>> nodes;
   public:
-      QList<Node*> nodes;
-      Plane(QList<Node*>& points);
-      Plane& operator =(const Plane& p);
-      QList<Node*> getNodes();
-      QList<QLine> getLines();
-      bool isSeen();
+    Plane()=default;
+    Plane(QList<std::shared_ptr<Node>>& points);
+    Plane& operator =(const Plane& p);
+    QList<std::shared_ptr<Node>> getNodes();
+    QList<QLine> getLines();
+    bool isSeen();
   };
 
 }

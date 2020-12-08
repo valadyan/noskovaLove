@@ -13,9 +13,6 @@ namespace Geometry {
   {
   public:
       My3DThinth();
-      QList<std::shared_ptr<Point>> getPoints(){
-          return points;
-      }
       QList<std::shared_ptr<Plane>> getPlanes(){
           return planes;
       }
@@ -24,7 +21,6 @@ namespace Geometry {
       }
   protected:
       QList<std::shared_ptr<Plane>> planes;
-      QList<std::shared_ptr<Point>> points;
       QList<std::shared_ptr<Node>> nodes;
   };
 

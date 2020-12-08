@@ -9,14 +9,14 @@ namespace Geometry {
 
   class Node
   {
-      typedef std::shared_ptr<Point> PointPointer;
-      PointPointer _point;
+      Point _point;
       QList<std::shared_ptr<Node>> _friends;
   public:
       Node()=default;
-      Node(Point* point);
+      Node(const Point& point);
       Node& operator =(const Node& n);
-      PointPointer getPoint();
+      Node& operator *=(const QMatrix4x4* m);
+      Point getPoint();
       QList<QLine> getLines();
       QList<Point> getPoints();
       void addFriend(Node* friend_);

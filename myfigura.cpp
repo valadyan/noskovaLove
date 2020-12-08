@@ -8,16 +8,13 @@ myfigura::myfigura(myfigura&& mf){
     R2=mf.R2;
     aproksimation=mf.aproksimation;
     h=mf.h;
-    points=std::move(mf.points);
     planes=std::move(mf.planes);
     nodes=std::move(mf.nodes);
-    mf.points.clear();
     mf.planes.clear();
     mf.nodes.clear();
 }
 
 myfigura::myfigura(const myfigura& mf){
-    points=std::move(mf.points);
     planes=std::move(mf.planes);
     nodes=std::move(mf.nodes);
 }
@@ -63,8 +60,8 @@ void myfigura::doPointEdit()
 }
 
 void myfigura::operator *=(const QMatrix4x4* matr){
-    for(auto& p: points){
-        p->operator *=(matr);
+    for(auto& n: nodes){
+        n->operator *=(matr);
     }
 }
 
@@ -73,10 +70,8 @@ myfigura& myfigura::operator =(myfigura&& mf){
     R2=mf.R2;
     aproksimation=mf.aproksimation;
     h=mf.h;
-    points=std::move(mf.points);
     nodes=std::move(mf.nodes);
     planes=std::move(mf.planes);
-    mf.points.clear();
     mf.planes.clear();
     mf.nodes.clear();
     return *this;
@@ -86,50 +81,49 @@ myfigura& myfigura::operator =(myfigura& mf){
     R2=mf.R2;
     aproksimation=mf.aproksimation;
     h=mf.h;
-    points=std::move(mf.points);
     nodes=std::move(mf.nodes);
     planes=std::move(mf.planes);
-    mf.points.clear();
     mf.planes.clear();
     mf.nodes.clear();
     return *this;
 }
 
-auto makePlane = [] (Node* p1, Node* p2, Node* p3) ->Plane*{
-    QList<Node*> nodes;
+auto makePlane = [] (std::shared_ptr<Node> p1, std::shared_ptr<Node> p2, std::shared_ptr<Node> p3)
+{
+    QList<std::shared_ptr<Node>> nodes;
     nodes.push_back(p1);
     nodes.push_back(p2);
     nodes.push_back(p3);
-    Plane* plane = new Plane(nodes);
+    std::shared_ptr<Plane> plane(new Plane(nodes));
     return plane;
 };
 
 myfigura::myfigura(int _R1, int _R2, int _n, int _h): R1(_R1), R2(_R2), aproksimation(_n), h(_h)
 {
-    Point* p=new Point(QVector3D(0,0,0));
-    Node* topNode =new Node(p);
-    points.push_back(std::shared_ptr<Point>(p));//вершина конуса
-    nodes.push_back(std::shared_ptr<Node>(new Node(p)));
+    Point p(QVector3D(0,0,0));
+    std::shared_ptr<Node> topNode(new Node(p));
+    nodes.push_back(topNode);
 
     float alf=2*3.14/aproksimation;
 
-    QList<Node*> coneBaseList;
+    QList<std::shared_ptr<Node>> coneBaseList;
 
-    Point* baseP = new Point(QVector3D(h,R2*sin(alf*0),R2*cos(alf*0)));//cone base node
-    Node* baseNode = new Node(p);
-    points.push_back(std::shared_ptr<Point>(baseP));
+    Point baseP(QVector3D(h,R2*sin(alf*0),R2*cos(alf*0)));
+    std::shared_ptr<Node> baseNode(new Node(baseP));
     nodes.push_back(std::shared_ptr<Node>(baseNode));
     coneBaseList.append(baseNode);
+    std::shared_ptr<Node> firstBaseNode = baseNode;
 
-    for(int i=1; i<aproksimation; i++){
-        Point* p = new Point(QVector3D(h,R2*sin(alf*i),R2*cos(alf*i)));
-        Node* nextBaseNode = new Node(p);
-        points.push_back(std::shared_ptr<Point>(p));
-        nodes.push_back(std::shared_ptr<Node>(new Node(p)));
+    for(int i=1; i<aproksimation; i++){//conebase
+        Point p(QVector3D(h,R2*sin(alf*i),R2*cos(alf*i)));
+        std::shared_ptr<Node> nextBaseNode(new Node(p));
+        nodes.push_back(nextBaseNode);
         planes.push_back(std::shared_ptr<Plane>(makePlane(topNode, baseNode, nextBaseNode)));
-        coneBaseList.append(nextBaseNode);
+        coneBaseList.push_front(nextBaseNode);//reverse sequence for isSeen() method
         baseNode = nextBaseNode;
     }
+
+    planes.push_back(std::shared_ptr<Plane>(makePlane(topNode, baseNode, firstBaseNode)));
 
     planes.push_back(std::shared_ptr<Plane>(new Plane(coneBaseList)));
 

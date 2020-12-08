@@ -2,7 +2,7 @@
 
 using namespace Geometry;
 
-Plane::Plane(QList<Node*>& points):
+Plane::Plane(QList<std::shared_ptr<Node>>& points):
     nodes(points)//(*points.front())
 {
 //            for(auto p=++points.begin(); p!=points.end(); p++)
@@ -15,7 +15,7 @@ Plane& Plane::operator =(const Plane& p)
     return *this;
 }
 
-QList<Node*> Plane::getNodes()
+QList<std::shared_ptr<Node>> Plane::getNodes()
 {
   return nodes;
 }
@@ -25,20 +25,20 @@ QList<QLine> Plane::getLines()
     QList<QLine> lines;
     auto iterN=nodes.begin();
     auto iter2=iterN+1;
-    auto preEnd=--nodes.end();
+    auto preEnd=nodes.end();
     while(iter2!=preEnd){
-        lines.push_back(QLine((*iterN++)->getPoint()->getVec().toPoint(), (*iter2++)->getPoint()->getVec().toPoint()));
+        lines.push_back(QLine((*iterN++)->getPoint().getVec().toPoint(), (*iter2++)->getPoint().getVec().toPoint()));
     }
-    lines.push_back(QLine((*iter2)->getPoint()->getVec().toPoint(), (*nodes.begin())->getPoint()->getVec().toPoint()));
+    lines.push_back(QLine((*--iter2)->getPoint().getVec().toPoint(), (*nodes.begin())->getPoint().getVec().toPoint()));
     return lines;
 }
 
 bool Plane::isSeen()
 {
 //            auto pointsList=nodes.getPoints();
-    auto p0=nodes[0]->getPoint()->getVec();
-    auto p1=nodes[1]->getPoint()->getVec();
-    auto p2=nodes[2]->getPoint()->getVec();
+    auto p0=nodes[0]->getPoint().getVec();
+    auto p1=nodes[1]->getPoint().getVec();
+    auto p2=nodes[2]->getPoint().getVec();
     double xa= p0.y()* p1.z() + p1.y()* p2.z() + p2.y()* p0.z() - p1.y()* p0.z() - p2.y()* p1.z() -p0.y()* p2.z();
     double ya= p0.z()* p1.x() + p1.z()* p2.x() + p2.z()* p0.x() - p1.z()* p0.x() - p2.z()* p1.x() -p0.z()* p2.x();
     double za= p0.x()* p1.y() + p1.x()* p2.y() + p2.x()* p0.y() - p1.x()* p0.y() - p2.x()* p1.y() -p0.x()* p2.y();

@@ -2,15 +2,21 @@
 
 using namespace Geometry;
 
-Node::Node(Point* point):_point(PointPointer(point)){}
+Node::Node(const Point& point):_point(point){}
 
-Node& Node::operator =(const Node& n){
+Node& Node::operator =(const Node& n)
+{
     _point=n._point;
     _friends=n._friends;
     return *this;
 }
 
-Node::PointPointer Node::getPoint()
+Node& Node::operator *=(const QMatrix4x4* m)
+{
+  _point*=m;
+  return *this;
+}
+Point Node::getPoint()
 {
     return _point;
 }
@@ -19,7 +25,7 @@ QList<QLine> Node::getLines()
 {
     QList<QLine> lines;
     for(auto n: _friends){
-        lines.push_back(QLine(_point->getVec().toPoint(), n->getPoint()->getVec().toPoint()));
+        lines.push_back(QLine(_point.getVec().toPoint(), n->getPoint().getVec().toPoint()));
     }
     return lines;
 }
@@ -27,9 +33,9 @@ QList<QLine> Node::getLines()
 QList<Point> Node::getPoints()
 {
     QList<Point> points;
-    points.push_back(*_point);
+    points.push_back(_point);
     for(auto n: _friends){
-        points.push_back(*(n->getPoint()));
+        points.push_back(n->getPoint());
     }
     return points;
 }
